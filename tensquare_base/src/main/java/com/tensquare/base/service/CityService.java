@@ -40,7 +40,7 @@ public class CityService
     @Transactional(propagation = Propagation.REQUIRED)
     public void save(City city)
     {
-        city.setId(idWorker.nextId() + "");
+        city.setId(String.valueOf(idWorker.nextId()));
         cityDao.save(city);
     }
 

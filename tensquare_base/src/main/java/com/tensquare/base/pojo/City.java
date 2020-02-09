@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 /**
  * Author: Durian
@@ -14,7 +15,7 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "tb_city")
-public class City
+public class City implements Serializable
 {
     @Id
     private String id;

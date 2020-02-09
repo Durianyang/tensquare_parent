@@ -46,11 +46,12 @@ public class IdWorker
     private final static long sequenceMask = ~(-1L << sequenceBits);
     /* 上次生产id时间戳 */
     private static long lastTimestamp = -1L;
-    // 0，并发控制
-    private long sequence = 0L;
 
+    // 0，并发控制，一毫秒内生成的多个id的最新序号
+    private long sequence = 0L;
+    // 机器ID
     private final long workerId;
-    // 数据标识id部分
+    // 数据标识id部分，机房ID
     private final long datacenterId;
 
     public IdWorker()
@@ -79,8 +80,6 @@ public class IdWorker
 
     /**
      * 获取下一个ID
-     *
-     * @return
      */
     public synchronized long nextId()
     {
@@ -89,10 +88,13 @@ public class IdWorker
         {
             throw new RuntimeException(String.format("Clock moved backwards.  Refusing to generate id for %d milliseconds", lastTimestamp - timestamp));
         }
-
+        // 下面是说假设在同一个毫秒内，又发送了一个请求生成一个id
+        // 这个时候就得把sequence序号给递增1，最多就是4096
         if (lastTimestamp == timestamp)
         {
             // 当前毫秒内，则+1
+            // 这个意思是说一个毫秒内最多只能有4096个数字，无论你传递多少进来，
+            //这个位运算保证始终就是在4096这个范围内，避免你自己传递个sequence超过了4096这个范围
             sequence = (sequence + 1) & sequenceMask;
             if (sequence == 0)
             {
@@ -103,9 +105,13 @@ public class IdWorker
         {
             sequence = 0L;
         }
+
+        // 这儿记录一下最近一次生成id的时间戳，单位是毫秒
         lastTimestamp = timestamp;
         // ID偏移组合生成最终的ID，并返回ID
-
+        // 这儿就是最核心的二进制位运算操作，生成一个64bit的id
+        // 先将当前时间戳左移，放到41 bit那儿；将机房id左移放到5 bit那儿；将机器id左移放到5 bit那儿；将序号放最后12 bit
+        // 最后拼接起来成一个64 bit的二进制数字，转换成10进制就是个long型
         return ((timestamp - twepoch) << timestampLeftShift)
                 | (datacenterId << datacenterIdShift)
                 | (workerId << workerIdShift) | sequence;
@@ -131,7 +137,7 @@ public class IdWorker
      * 获取 maxWorkerId
      * </p>
      */
-    protected static long getMaxWorkerId(long datacenterId)
+    private static long getMaxWorkerId(long datacenterId)
     {
         StringBuilder mpid = new StringBuilder();
         mpid.append(datacenterId);
@@ -154,7 +160,7 @@ public class IdWorker
      * 数据标识id部分
      * </p>
      */
-    protected static long getDatacenterId()
+    private static long getDatacenterId()
     {
         long id = 0L;
         try
@@ -178,5 +184,13 @@ public class IdWorker
         return id;
     }
 
+    public static void main(String[] args)
+    {
+        IdWorker idWorker = new IdWorker();
+        for (int i = 0; i < 260000; i++)
+        {
+            System.out.println(idWorker.nextId());
+        }
+    }
 
 }

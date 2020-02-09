@@ -9,6 +9,9 @@
     <modules>
         <module>tensquare_common</module>
         <module>tensquare_base</module>
+        <module>tensquare_recruit</module>
+        <module>tensquare_qa</module>
+        <module>tensquare_article</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -51,6 +54,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
         </dependency>
+
+        <!--hutool工具包-->
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-core -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-core</artifactId>
+            <version>5.1.2</version>
+        </dependency>
+
     </dependencies>
 
     <repositories>

@@ -1,0 +1,184 @@
+package com.tensquare.recruit.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.criteria.Predicate;
+
+import com.tensquare.utils.IdWorker;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import com.tensquare.recruit.dao.EnterpriseDao;
+import com.tensquare.recruit.pojo.Enterprise;
+
+/**
+ * 服务层
+ *
+ * @author Administrator
+ */
+@Service
+public class EnterpriseService
+{
+
+    private final EnterpriseDao enterpriseDao;
+    private final IdWorker idWorker;
+
+    @Autowired
+    public EnterpriseService(EnterpriseDao enterpriseDao, IdWorker idWorker)
+    {
+        this.enterpriseDao = enterpriseDao;
+        this.idWorker = idWorker;
+    }
+
+    /**
+     * 查询全部列表
+     *
+     * @return
+     */
+    public List<Enterprise> findAll()
+    {
+        return enterpriseDao.findAll();
+    }
+
+
+    /**
+     * 条件查询+分页
+     *
+     * @param whereMap
+     * @param page
+     * @param size
+     * @return
+     */
+    public Page<Enterprise> findSearch(Map whereMap, int page, int size)
+    {
+        Specification<Enterprise> specification = createSpecification(whereMap);
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        return enterpriseDao.findAll(specification, pageRequest);
+    }
+
+
+    /**
+     * 条件查询
+     *
+     * @param whereMap
+     * @return
+     */
+    public List<Enterprise> findSearch(Map whereMap)
+    {
+        Specification<Enterprise> specification = createSpecification(whereMap);
+        return enterpriseDao.findAll(specification);
+    }
+
+    /**
+     * 根据ID查询实体
+     *
+     * @param id
+     * @return
+     */
+    public Enterprise findById(String id)
+    {
+        return enterpriseDao.findById(id).get();
+    }
+
+    /**
+     * 增加
+     *
+     * @param enterprise
+     */
+    public void add(Enterprise enterprise)
+    {
+        enterprise.setId(idWorker.nextId() + "");
+        enterpriseDao.save(enterprise);
+    }
+
+    /**
+     * 修改
+     *
+     * @param enterprise
+     */
+    public void update(Enterprise enterprise)
+    {
+        enterpriseDao.save(enterprise);
+    }
+
+    /**
+     * 删除
+     *
+     * @param id
+     */
+    public void deleteById(String id)
+    {
+        enterpriseDao.deleteById(id);
+    }
+
+    public List<Enterprise> findByIshot(String ishot)
+    {
+        return enterpriseDao.findByIshot(ishot);
+    }
+
+
+    /**
+     * 动态条件构建
+     *
+     * @param searchMap
+     * @return
+     */
+    private Specification<Enterprise> createSpecification(Map searchMap)
+    {
+
+        return (Specification<Enterprise>) (root, query, cb) ->
+        {
+            List<Predicate> predicateList = new ArrayList<>();
+            // ID
+            if (searchMap.get("id") != null && !"".equals(searchMap.get("id")))
+            {
+                predicateList.add(cb.like(root.get("id").as(String.class), "%" + searchMap.get("id") + "%"));
+            }
+            // 企业名称
+            if (searchMap.get("name") != null && !"".equals(searchMap.get("name")))
+            {
+                predicateList.add(cb.like(root.get("name").as(String.class), "%" + searchMap.get("name") + "%"));
+            }
+            // 企业简介
+            if (searchMap.get("summary") != null && !"".equals(searchMap.get("summary")))
+            {
+                predicateList.add(cb.like(root.get("summary").as(String.class), "%" + searchMap.get("summary") + "%"));
+            }
+            // 企业地址
+            if (searchMap.get("address") != null && !"".equals(searchMap.get("address")))
+            {
+                predicateList.add(cb.like(root.get("address").as(String.class), "%" + searchMap.get("address") + "%"));
+            }
+            // 标签列表
+            if (searchMap.get("labels") != null && !"".equals(searchMap.get("labels")))
+            {
+                predicateList.add(cb.equal(root.get("labels").as(String.class), searchMap.get("labels")));
+            }
+            // 坐标
+            if (searchMap.get("coordinate") != null && !"".equals(searchMap.get("coordinate")))
+            {
+                predicateList.add(cb.like(root.get("coordinate").as(String.class), "%" + searchMap.get("coordinate") + "%"));
+            }
+            // 是否热门
+            if (searchMap.get("ishot") != null && !"".equals(searchMap.get("ishot")))
+            {
+                predicateList.add(cb.equal(root.get("ishot").as(String.class), searchMap.get("ishot")));
+            }
+            // URL
+            if (searchMap.get("url") != null && !"".equals(searchMap.get("url")))
+            {
+                predicateList.add(cb.like(root.get("url").as(String.class), "%" + searchMap.get("url") + "%"));
+            }
+
+            return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
+
+        };
+
+    }
+
+}

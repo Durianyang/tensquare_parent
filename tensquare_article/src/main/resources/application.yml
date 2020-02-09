@@ -1,0 +1,22 @@
+server: 
+  port: 9004
+spring: 
+  application:  
+    name: tensquare-article #指定服务名
+  datasource:  
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://rm-bp133858g2361qh0fso.mysql.rds.aliyuncs.com:3306/tensquare_article?useUnicode=true&amp;characterEncoding=UTF8&useSSL=false
+    username: root
+    password: Yw19981016
+  jpa: 
+    database: MySQL
+    show-sql: true
+
+  redis:
+    host: 47.93.11.144
+    port: 6379
+    password: Yw43112819981016+0035
+    database: 0
+    timeout: 20000
+
+
