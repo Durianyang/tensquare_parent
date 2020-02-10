@@ -1,11 +1,9 @@
 package com.tensquare.article.controller;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tensquare.entity.PageResult;
 import com.tensquare.entity.Result;
 import com.tensquare.entity.StatusCode;

@@ -1,12 +1,12 @@
 package com.tensquare.article.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
 import javax.persistence.criteria.Predicate;
 
 import com.tensquare.utils.IdWorker;
@@ -31,16 +31,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ArticleService
 {
-    private final RedisTemplate redisTemplate;
+    @Resource
+    private RedisTemplate redisTemplate;
     private final ArticleDao articleDao;
     private final IdWorker idWorker;
 
     @Autowired
-    public ArticleService(ArticleDao articleDao, IdWorker idWorker, RedisTemplate redisTemplate)
+    public ArticleService(ArticleDao articleDao, IdWorker idWorker)
     {
         this.articleDao = articleDao;
         this.idWorker = idWorker;
-        this.redisTemplate = redisTemplate;
     }
 
     /**
@@ -95,9 +95,9 @@ public class ArticleService
         if (null == article)
         {
             // 从数据库中查询
-            article = articleDao.findById(id).get();
+            article = articleDao.findById(id).orElse(null);
             // 存入缓存
-            redisTemplate.opsForValue().set("article_" + id, article, 10, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set("article_" + id, article, 1, TimeUnit.MINUTES);
         }
         return article;
     }
@@ -114,7 +114,7 @@ public class ArticleService
         article.setThumbup(0);
         article.setComment(0);
         article.setState("0");
-        article.setId(idWorker.nextId() + "");
+        article.setId(String.valueOf(idWorker.nextId()));
         articleDao.save(article);
     }
 

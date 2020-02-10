@@ -1,0 +1,16 @@
+server:
+  port: 9006
+
+spring:
+  application:
+    name: tensquare-spit
+  data:
+    mongodb:
+      uri: mongodb://spit:123456@47.93.11.144:27017/spitdb
+
+  redis:
+    host: 47.93.11.144
+    port: 6379
+    password: Yw43112819981016+0035
+    database: 0
+    timeout: 20000
