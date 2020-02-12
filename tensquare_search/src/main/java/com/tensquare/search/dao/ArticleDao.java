@@ -13,4 +13,5 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchCrudReposi
 public interface ArticleDao extends ElasticsearchCrudRepository<Article, String>
 {
     Page<Article> findByTitleOrContentLike(String title, String content, Pageable pageable);
+
 }
