@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.tensquare.entity.PageResult;
 import com.tensquare.entity.Result;
 import com.tensquare.entity.StatusCode;
+import com.tensquare.qa.client.BaseClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -29,14 +30,21 @@ public class ProblemController
 
     private final ProblemService problemService;
     private final HttpServletRequest request;
+    private final BaseClient baseClient;
 
     @Autowired
-    public ProblemController(ProblemService problemService, HttpServletRequest request)
+    public ProblemController(ProblemService problemService, HttpServletRequest request, BaseClient baseClient)
     {
         this.problemService = problemService;
         this.request = request;
+        this.baseClient = baseClient;
     }
 
+    @GetMapping("/label/{labelId}")
+    public Result findLabelById(@PathVariable String labelId)
+    {
+        return baseClient.findById(labelId);
+    }
 
     /**
      * 查询全部数据

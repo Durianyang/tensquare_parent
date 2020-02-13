@@ -45,6 +45,18 @@ public class UserController
         return new Result(StatusCode.OK, true, "短信验证码发送成功");
     }
 
+    @PutMapping("/updatefans/{userId}/{count}")
+    public void updateFans(@PathVariable String userId, @PathVariable int count)
+    {
+        userService.updateFansCount(userId, count);
+    }
+
+    @PutMapping("/updatefollows/{userId}/{count}")
+    public void updateFollows(@PathVariable String userId, @PathVariable int count)
+    {
+        userService.updateFollowCount(userId, count);
+    }
+
     /**
      * 登录
      *
@@ -56,7 +68,7 @@ public class UserController
         if (user != null)
         {
             String token = jwtUtils.createJWT(user.getId(), user.getNickname(), "user");
-            Map<String, String> data = new HashMap<>(2);
+            Map<String, String> data = new HashMap<>(3);
             data.put("token", token);
             data.put("roles", "user");
             data.put("avatar", user.getAvatar());

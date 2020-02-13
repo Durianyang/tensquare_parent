@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import com.tensquare.user.dao.UserDao;
 import com.tensquare.user.pojo.User;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 服务层
@@ -31,10 +32,10 @@ import com.tensquare.user.pojo.User;
  * @author Administrator
  */
 @Service
+@Transactional
 public class UserService
 {
 
-    private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder encoder;
     private final UserDao userDao;
     private final RabbitTemplate rabbitTemplate;
@@ -45,14 +46,23 @@ public class UserService
     private RedisTemplate redisTemplate;
 
     @Autowired
-    public UserService(JwtUtils jwtUtils, UserDao userDao, RabbitTemplate rabbitTemplate, IdWorker idWorker, BCryptPasswordEncoder encoder, HttpServletRequest request)
+    public UserService(UserDao userDao, RabbitTemplate rabbitTemplate, IdWorker idWorker, BCryptPasswordEncoder encoder, HttpServletRequest request)
     {
-        this.jwtUtils = jwtUtils;
         this.userDao = userDao;
         this.rabbitTemplate = rabbitTemplate;
         this.idWorker = idWorker;
         this.encoder = encoder;
         this.request = request;
+    }
+
+    public void updateFansCount(String userId, int count)
+    {
+        userDao.updateFansCount(userId, count);
+    }
+
+    public void updateFollowCount(String userId, int count)
+    {
+        userDao.updateFollowCount(userId, count);
     }
 
     /**
@@ -183,7 +193,7 @@ public class UserService
         userInfo.setUpdatedate(new Date());
         userInfo.setLastdate(new Date());
         userDao.save(userInfo);
-        redisTemplate.delete("mobile_" + userInfo.getMobile());
+        redisTemplate.delete("smsmobile_" + userInfo.getMobile());
         return true;
     }
 
