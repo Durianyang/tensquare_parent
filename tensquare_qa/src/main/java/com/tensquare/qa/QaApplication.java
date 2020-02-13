@@ -1,6 +1,7 @@
 package com.tensquare.qa;
 
 import com.tensquare.utils.IdWorker;
+import com.tensquare.utils.JwtUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,12 @@ public class QaApplication
     public IdWorker idWorker()
     {
         return new IdWorker(1, 1);
+    }
+
+    @Bean
+    public JwtUtils jwtUtils()
+    {
+        return new JwtUtils();
     }
 
 }

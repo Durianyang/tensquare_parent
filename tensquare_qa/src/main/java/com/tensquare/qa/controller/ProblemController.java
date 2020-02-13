@@ -1,7 +1,9 @@
 package com.tensquare.qa.controller;
 
 import java.util.Map;
+import java.util.Objects;
 
+import cn.hutool.core.util.StrUtil;
 import com.tensquare.entity.PageResult;
 import com.tensquare.entity.Result;
 import com.tensquare.entity.StatusCode;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tensquare.qa.pojo.Problem;
 import com.tensquare.qa.service.ProblemService;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 控制器层
@@ -24,11 +28,13 @@ public class ProblemController
 {
 
     private final ProblemService problemService;
+    private final HttpServletRequest request;
 
     @Autowired
-    public ProblemController(ProblemService problemService)
+    public ProblemController(ProblemService problemService, HttpServletRequest request)
     {
         this.problemService = problemService;
+        this.request = request;
     }
 
 
@@ -94,8 +100,13 @@ public class ProblemController
     @PostMapping
     public Result add(@RequestBody Problem problem)
     {
-        problemService.add(problem);
-        return new Result<>(StatusCode.OK, true, "增加成功");
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
+            problemService.add(problem);
+            return new Result<>(StatusCode.OK, true, "增加成功");
+        }
+        return new Result<>(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
     /**
@@ -106,9 +117,14 @@ public class ProblemController
     @PutMapping("/{id}")
     public Result update(@RequestBody Problem problem, @PathVariable String id)
     {
-        problem.setId(id);
-        problemService.update(problem);
-        return new Result<>(StatusCode.OK, true, "修改成功");
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
+            problem.setId(id);
+            problemService.update(problem);
+            return new Result<>(StatusCode.OK, true, "修改成功");
+        }
+        return new Result<>(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
     /**
@@ -119,8 +135,13 @@ public class ProblemController
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable String id)
     {
-        problemService.deleteById(id);
-        return new Result(StatusCode.OK, true, "删除成功");
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
+            problemService.deleteById(id);
+            return new Result(StatusCode.OK, true, "删除成功");
+        }
+        return new Result<>(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
     /**

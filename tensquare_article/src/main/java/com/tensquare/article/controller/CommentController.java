@@ -1,5 +1,6 @@
 package com.tensquare.article.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.tensquare.article.pojo.Comment;
 import com.tensquare.article.service.CommentService;
 import com.tensquare.entity.Result;
@@ -7,7 +8,9 @@ import com.tensquare.entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Author: Durian
@@ -20,10 +23,13 @@ import java.util.List;
 public class CommentController
 {
     private final CommentService commentService;
+    private final HttpServletRequest request;
+
     @Autowired
-    public CommentController(CommentService commentService)
+    public CommentController(CommentService commentService, HttpServletRequest request)
     {
         this.commentService = commentService;
+        this.request = request;
     }
 
     @GetMapping("/article/{articleId}")
@@ -56,8 +62,13 @@ public class CommentController
     @PostMapping
     public Result add(@RequestBody Comment comment)
     {
-        commentService.add(comment);
-        return new Result<>(StatusCode.OK, true, "增加成功");
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
+            commentService.add(comment);
+            return new Result<>(StatusCode.OK, true, "增加成功");
+        }
+        return new Result<>(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
 }

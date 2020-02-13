@@ -6,8 +6,12 @@ spring:
   datasource:  
     driverClassName: com.mysql.jdbc.Driver
     url: jdbc:mysql://rm-bp133858g2361qh0fso.mysql.rds.aliyuncs.com:3306/tensquare_recruit?useUnicode=true&amp;characterEncoding=UTF8&useSSL=false
-    username: root
-    password: Yw19981016
+    username: ENC(x+RLfp0IqGlHHMuU5k/c6Q==)
+    password: ENC(9N0j84xejjkUxmfM+MiaYB0sEfMZWDqY)
   jpa: 
     database: MySQL
     show-sql: true
+
+jasypt:
+  encryptor:
+    password: ${TENSQUARE_HOME}

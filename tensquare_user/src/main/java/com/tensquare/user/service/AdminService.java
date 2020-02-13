@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tensquare.user.dao.AdminDao;
@@ -28,22 +29,42 @@ import com.tensquare.user.pojo.Admin;
 public class AdminService
 {
 
-    @Autowired
-    private AdminDao adminDao;
+    private final BCryptPasswordEncoder encoder;
+    private final AdminDao adminDao;
+    private final IdWorker idWorker;
+
 
     @Autowired
-    private IdWorker idWorker;
+    public AdminService(BCryptPasswordEncoder encoder, AdminDao adminDao, IdWorker idWorker)
+    {
+        this.encoder = encoder;
+        this.adminDao = adminDao;
+        this.idWorker = idWorker;
+    }
 
     /**
      * 查询全部列表
      *
-     * @return
+     *
      */
     public List<Admin> findAll()
     {
         return adminDao.findAll();
     }
 
+
+    public Admin findByLoginNameAndPassword(String loginname, String password)
+    {
+        Admin admin = adminDao.findByLoginname(loginname);
+        // BCrypt验证
+        if (admin != null && encoder.matches(password, admin.getPassword()))
+        {
+            return admin;
+        } else
+        {
+            return null;
+        }
+    }
 
     /**
      * 条件查询+分页
@@ -87,12 +108,20 @@ public class AdminService
     /**
      * 增加
      *
-     * @param admin
+     * @param adminInfo
      */
-    public void add(Admin admin)
+    public boolean add(Admin adminInfo)
     {
-        admin.setId(idWorker.nextId() + "");
-        adminDao.save(admin);
+        Admin admin = adminDao.findByLoginname(adminInfo.getLoginname());
+        if (admin != null)
+        {
+            return false;
+        }
+        adminInfo.setId(String.valueOf(idWorker.nextId()));
+        String newPassword = encoder.encode(adminInfo.getPassword());
+        adminInfo.setPassword(newPassword);
+        adminDao.save(adminInfo);
+        return true;
     }
 
     /**

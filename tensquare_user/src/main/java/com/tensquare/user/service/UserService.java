@@ -4,8 +4,12 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import javax.persistence.criteria.Predicate;
+import javax.servlet.http.HttpServletRequest;
 
+import cn.hutool.core.util.StrUtil;
 import com.tensquare.utils.IdWorker;
+import com.tensquare.utils.JwtUtils;
+import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -14,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -29,19 +34,41 @@ import com.tensquare.user.pojo.User;
 public class UserService
 {
 
+    private final JwtUtils jwtUtils;
+    private final BCryptPasswordEncoder encoder;
     private final UserDao userDao;
     private final RabbitTemplate rabbitTemplate;
     private final IdWorker idWorker;
+    private final HttpServletRequest request;
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
     @Resource
     private RedisTemplate redisTemplate;
 
     @Autowired
-    public UserService(UserDao userDao, RabbitTemplate rabbitTemplate, IdWorker idWorker)
+    public UserService(JwtUtils jwtUtils, UserDao userDao, RabbitTemplate rabbitTemplate, IdWorker idWorker, BCryptPasswordEncoder encoder, HttpServletRequest request)
     {
+        this.jwtUtils = jwtUtils;
         this.userDao = userDao;
         this.rabbitTemplate = rabbitTemplate;
         this.idWorker = idWorker;
+        this.encoder = encoder;
+        this.request = request;
+    }
+
+    /**
+     * 登录
+     */
+    public User findByNickNameAndPassword(String nickname, String password)
+    {
+        User user = userDao.findByNickname(nickname);
+        // BCrypt验证
+        if (user != null && encoder.matches(password, user.getPassword()))
+        {
+            return user;
+        } else
+        {
+            return null;
+        }
     }
 
     /**
@@ -54,7 +81,6 @@ public class UserService
 
     /**
      * 发送短信验证码到redis和rabbitMQ
-     *
      */
     public void sendSms(String mobile)
     {
@@ -131,22 +157,24 @@ public class UserService
      *
      * @param userInfo
      */
-    public void add(User userInfo, String code)
+    public boolean add(User userInfo, String code)
     {
         User user = findByNickName(userInfo.getNickname());
         if (user != null)
         {
-            throw new RuntimeException("昵称已被使用");
+            return false;
         }
         // 判断验证码
         String syscode = (String) redisTemplate.opsForValue().get("smsmobile_" + userInfo.getMobile());
-        if (syscode == null)
+        if (code == null)
         {
             throw new RuntimeException("验证码不能为空");
         } else if (!Objects.equals(syscode, code))
         {
             throw new RuntimeException("验证码错误");
         }
+        String newPassword = encoder.encode(userInfo.getPassword());
+        userInfo.setPassword(newPassword);
         userInfo.setId(String.valueOf(idWorker.nextId()));
         userInfo.setFanscount(0);
         userInfo.setFollowcount(0);
@@ -156,6 +184,7 @@ public class UserService
         userInfo.setLastdate(new Date());
         userDao.save(userInfo);
         redisTemplate.delete("mobile_" + userInfo.getMobile());
+        return true;
     }
 
     /**
@@ -171,10 +200,14 @@ public class UserService
     /**
      * 删除
      *
-     * @param id
      */
     public void deleteById(String id)
     {
+        String roles = (String) request.getAttribute("roles");
+        if (StrUtil.isBlank(roles) || !Objects.equals(roles, "admin"))
+        {
+            throw new RuntimeException("权限不足");
+        }
         userDao.deleteById(id);
     }
 

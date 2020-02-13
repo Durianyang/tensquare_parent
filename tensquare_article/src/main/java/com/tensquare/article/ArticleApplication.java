@@ -1,6 +1,7 @@
 package com.tensquare.article;
 
 import com.tensquare.utils.IdWorker;
+import com.tensquare.utils.JwtUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -21,4 +22,9 @@ public class ArticleApplication
         return new IdWorker(1, 1);
     }
 
+    @Bean
+    public JwtUtils jwtUtils()
+    {
+        return new JwtUtils();
+    }
 }

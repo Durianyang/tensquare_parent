@@ -6,8 +6,8 @@ spring:
   datasource:
     driverClassName: com.mysql.jdbc.Driver
     url: jdbc:mysql://rm-bp133858g2361qh0fso.mysql.rds.aliyuncs.com:3306/tensquare_user?useUnicode=true&amp;characterEncoding=UTF8&useSSL=false
-    username: root
-    password: Yw19981016
+    username: ENC(x+RLfp0IqGlHHMuU5k/c6Q==)
+    password: ENC(9N0j84xejjkUxmfM+MiaYB0sEfMZWDqY)
   jpa:
     database: MySQL
     show-sql: true
@@ -15,10 +15,19 @@ spring:
   redis:
     host: 47.93.11.144
     port: 6379
-    password: Yw43112819981016+0035
+    password: ENC(+ySWSe9c1nYhQ53OIUd4GyVLd0tdO4fLUP+6/GCOPeg=)
     database: 0
     timeout: 20000
 
   rabbitmq:
     host: 47.93.11.144
     port: 5672
+
+jasypt:
+  encryptor:
+    password: ${TENSQUARE_HOME}
+
+jwt:
+  config:
+    ttl: 1800000
+    key: ${TENSQUARE_HOME}

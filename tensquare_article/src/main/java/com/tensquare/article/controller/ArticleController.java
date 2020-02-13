@@ -3,7 +3,9 @@ package com.tensquare.article.controller;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import cn.hutool.core.util.StrUtil;
 import com.tensquare.entity.PageResult;
 import com.tensquare.entity.Result;
 import com.tensquare.entity.StatusCode;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tensquare.article.pojo.Article;
 import com.tensquare.article.service.ArticleService;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 控制器层
@@ -26,11 +30,13 @@ public class ArticleController
 {
 
     private final ArticleService articleService;
+    private final HttpServletRequest request;
 
     @Autowired
-    public ArticleController(ArticleService articleService)
+    public ArticleController(ArticleService articleService, HttpServletRequest request)
     {
         this.articleService = articleService;
+        this.request = request;
     }
 
 
@@ -96,8 +102,13 @@ public class ArticleController
     @RequestMapping(method = RequestMethod.POST)
     public Result add(@RequestBody Article article)
     {
-        articleService.add(article);
-        return new Result(StatusCode.OK, true, "增加成功");
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
+            articleService.add(article);
+            return new Result(StatusCode.OK, true, "增加成功");
+        }
+        return new Result(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
     /**

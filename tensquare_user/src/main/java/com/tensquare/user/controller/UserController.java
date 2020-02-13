@@ -1,10 +1,12 @@
 package com.tensquare.user.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.tensquare.entity.PageResult;
 import com.tensquare.entity.Result;
 import com.tensquare.entity.StatusCode;
+import com.tensquare.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -24,16 +26,17 @@ public class UserController
 {
 
     private final UserService userService;
+    private final JwtUtils jwtUtils;
 
     @Autowired
-    public UserController(UserService userService)
+    public UserController(UserService userService, JwtUtils jwtUtils)
     {
         this.userService = userService;
+        this.jwtUtils = jwtUtils;
     }
 
     /**
      * 发送手机验证码
-     *
      */
     @GetMapping("/sendsms/{mobile}")
     public Result sendSms(@PathVariable String mobile)
@@ -43,9 +46,31 @@ public class UserController
     }
 
     /**
+     * 登录
+     *
+     */
+    @PostMapping("/login")
+    public Result<Map<String, String>> login(@RequestBody User userInfo)
+    {
+        User user = userService.findByNickNameAndPassword(userInfo.getNickname(), userInfo.getPassword());
+        if (user != null)
+        {
+            String token = jwtUtils.createJWT(user.getId(), user.getNickname(), "user");
+            Map<String, String> data = new HashMap<>(2);
+            data.put("token", token);
+            data.put("roles", "user");
+            data.put("avatar", user.getAvatar());
+            return new Result<>(StatusCode.OK, true, "登录成功", data);
+        } else
+        {
+            return new Result<>(StatusCode.ERROR, false, null);
+        }
+    }
+
+
+    /**
      * 查询全部数据
      *
-     * @return
      */
     @RequestMapping(method = RequestMethod.GET)
     public Result findAll()
@@ -57,7 +82,6 @@ public class UserController
      * 根据ID查询
      *
      * @param id ID
-     * @return
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public Result findById(@PathVariable String id)
@@ -85,8 +109,6 @@ public class UserController
     /**
      * 根据条件查询
      *
-     * @param searchMap
-     * @return
      */
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap)
@@ -97,19 +119,21 @@ public class UserController
     /**
      * 增加
      *
-     * @param user
      */
     @PostMapping("/register/{code}")
     public Result add(@RequestBody User user, @PathVariable String code)
     {
-        userService.add(user, code);
-        return new Result<>(StatusCode.OK, true, "注册成功");
+        boolean flag = userService.add(user, code);
+        if (flag)
+        {
+            return new Result<>(StatusCode.OK, true, "注册成功");
+        }
+        return new Result<>(StatusCode.ERROR, false, "昵称重复");
     }
 
     /**
      * 修改
      *
-     * @param user
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public Result update(@RequestBody User user, @PathVariable String id)
@@ -122,7 +146,6 @@ public class UserController
     /**
      * 删除
      *
-     * @param id
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public Result delete(@PathVariable String id)

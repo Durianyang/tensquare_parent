@@ -2,7 +2,9 @@ package com.tensquare.qa.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import cn.hutool.core.util.StrUtil;
 import com.tensquare.entity.PageResult;
 import com.tensquare.entity.Result;
 import com.tensquare.entity.StatusCode;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tensquare.qa.pojo.Reply;
 import com.tensquare.qa.service.ReplyService;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -26,11 +30,13 @@ public class ReplyController
 {
 
     private final ReplyService replyService;
+    private final HttpServletRequest request;
 
     @Autowired
-    public ReplyController(ReplyService replyService)
+    public ReplyController(ReplyService replyService, HttpServletRequest request)
     {
         this.replyService = replyService;
+        this.request = request;
     }
 
 
@@ -95,8 +101,13 @@ public class ReplyController
     @PostMapping
     public Result add(@RequestBody Reply reply)
     {
-        replyService.add(reply);
-        return new Result(StatusCode.OK, true, "增加成功");
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
+            replyService.add(reply);
+            return new Result(StatusCode.OK, true, "增加成功");
+        }
+        return new Result(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
     /**
@@ -107,9 +118,14 @@ public class ReplyController
     @PutMapping("/{id}")
     public Result update(@RequestBody Reply reply, @PathVariable String id)
     {
-        reply.setId(id);
-        replyService.update(reply);
-        return new Result(StatusCode.OK, true, "修改成功");
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
+            reply.setId(id);
+            replyService.update(reply);
+            return new Result(StatusCode.OK, true, "修改成功");
+        }
+        return new Result(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
     /**
@@ -120,8 +136,13 @@ public class ReplyController
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable String id)
     {
-        replyService.deleteById(id);
-        return new Result(StatusCode.OK, true, "删除成功");
-    }
+        String roles = (String) request.getAttribute("roles");
+        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        {
 
+            replyService.deleteById(id);
+            return new Result(StatusCode.OK, true, "删除成功");
+        }
+        return new Result(StatusCode.ACCESS_ERROR, false, "未登录");
+    }
 }

@@ -11,6 +11,15 @@ spring:
   redis:
     host: 47.93.11.144
     port: 6379
-    password: Yw43112819981016+0035
+    password: ENC(+ySWSe9c1nYhQ53OIUd4GyVLd0tdO4fLUP+6/GCOPeg=)
     database: 0
     timeout: 20000
+
+jasypt:
+  encryptor:
+    password: ${TENSQUARE_HOME}
+
+jwt:
+  config:
+    ttl: 1800000
+    key: ${TENSQUARE_HOME}

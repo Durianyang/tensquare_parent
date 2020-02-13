@@ -1,18 +1,15 @@
 package com.tensquare.user.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.tensquare.entity.PageResult;
 import com.tensquare.entity.Result;
 import com.tensquare.entity.StatusCode;
+import com.tensquare.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.tensquare.user.pojo.Admin;
 import com.tensquare.user.service.AdminService;
@@ -29,9 +26,32 @@ import com.tensquare.user.service.AdminService;
 public class AdminController
 {
 
-    @Autowired
-    private AdminService adminService;
+    private final AdminService adminService;
+    private final JwtUtils jwtUtils;
 
+    @Autowired
+    public AdminController(AdminService adminService, JwtUtils jwtUtils)
+    {
+        this.adminService = adminService;
+        this.jwtUtils = jwtUtils;
+    }
+
+    @PostMapping("/login")
+    public Result<Map<String, String>> login(@RequestBody Admin adminInfo)
+    {
+        Admin admin = adminService.findByLoginNameAndPassword(adminInfo.getLoginname(), adminInfo.getPassword());
+        if (admin != null)
+        {
+            String token = jwtUtils.createJWT(admin.getId(), admin.getLoginname(), "admin");
+            Map<String, String> data = new HashMap<>(2);
+            data.put("token", token);
+            data.put("roles", "admin");
+            return new Result<>(StatusCode.OK, true, "登录成功", data);
+        } else
+        {
+            return new Result<>(StatusCode.LOGIN_ERROR, false, "用户名或密码错误", null);
+        }
+    }
 
     /**
      * 查询全部数据
@@ -41,7 +61,7 @@ public class AdminController
     @RequestMapping(method = RequestMethod.GET)
     public Result findAll()
     {
-        return new Result(StatusCode.OK, true, "查询成功", adminService.findAll());
+        return new Result<>(StatusCode.OK, true, "查询成功", adminService.findAll());
     }
 
     /**
@@ -53,7 +73,7 @@ public class AdminController
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public Result findById(@PathVariable String id)
     {
-        return new Result(StatusCode.OK, true, "查询成功", adminService.findById(id));
+        return new Result<>(StatusCode.OK, true, "查询成功", adminService.findById(id));
     }
 
 
@@ -69,7 +89,7 @@ public class AdminController
     public Result findSearch(@RequestBody Map searchMap, @PathVariable int page, @PathVariable int size)
     {
         Page<Admin> pageList = adminService.findSearch(searchMap, page, size);
-        return new Result(StatusCode.OK, true, "查询成功", new PageResult<Admin>(pageList.getTotalElements(), pageList.getContent()));
+        return new Result<>(StatusCode.OK, true, "查询成功", new PageResult<Admin>(pageList.getTotalElements(), pageList.getContent()));
     }
 
     /**
@@ -81,7 +101,7 @@ public class AdminController
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     public Result findSearch(@RequestBody Map searchMap)
     {
-        return new Result(StatusCode.OK, true, "查询成功", adminService.findSearch(searchMap));
+        return new Result<>(StatusCode.OK, true, "查询成功", adminService.findSearch(searchMap));
     }
 
     /**
@@ -92,8 +112,13 @@ public class AdminController
     @RequestMapping(method = RequestMethod.POST)
     public Result add(@RequestBody Admin admin)
     {
-        adminService.add(admin);
-        return new Result(StatusCode.OK, true, "增加成功");
+        boolean flag = adminService.add(admin);
+        if (flag)
+        {
+            return new Result(StatusCode.OK, true, "增加成功");
+        }else {
+            return new Result(StatusCode.ERROR, false, "管理员已存在");
+        }
     }
 
     /**

@@ -17,6 +17,6 @@ public class BaseExceptionController
     public Result error(Exception e)
     {
         e.printStackTrace();
-        return new Result(StatusCode.OK, true, "执行出错");
+        return new Result(StatusCode.OK, true, e.getMessage());
     }
 }
