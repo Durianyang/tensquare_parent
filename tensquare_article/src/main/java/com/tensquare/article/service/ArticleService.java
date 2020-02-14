@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Administrator
  */
 @Service
-@Transactional
 public class ArticleService
 {
     @Resource
@@ -75,6 +74,7 @@ public class ArticleService
      * @param whereMap
      * @return
      */
+    @Transactional(readOnly = true)
     public List<Article> findSearch(Map whereMap)
     {
         Specification<Article> specification = createSpecification(whereMap);
@@ -87,6 +87,7 @@ public class ArticleService
      * @param id
      * @return
      */
+    @Transactional(readOnly = true)
     public Article findById(String id)
     {
         // 先从缓存中查询当前对象
@@ -107,6 +108,7 @@ public class ArticleService
      *
      * @param article
      */
+    @Transactional
     public void add(Article article)
     {
         article.setCreatetime(new Date());
@@ -123,6 +125,7 @@ public class ArticleService
      *
      * @param article
      */
+    @Transactional
     public void update(Article article)
     {
         redisTemplate.delete("article_" + article.getId());
@@ -134,6 +137,7 @@ public class ArticleService
      *
      * @param id
      */
+    @Transactional
     public void deleteById(String id)
     {
         redisTemplate.delete("article_" + id);
@@ -143,6 +147,7 @@ public class ArticleService
     /**
      * 审核
      */
+    @Transactional
     public void updateState(String articleId)
     {
         articleDao.updateState(articleId);
@@ -151,6 +156,7 @@ public class ArticleService
     /**
      * 点赞
      */
+    @Transactional
     public void updateThumbUp(String articleId)
     {
         articleDao.updateThumbUp(articleId);

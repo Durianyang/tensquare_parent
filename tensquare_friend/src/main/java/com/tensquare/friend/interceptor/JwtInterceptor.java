@@ -39,8 +39,10 @@ public class JwtInterceptor implements HandlerInterceptor
             try
             {
                 Claims claims = jwtUtils.parseJWT(token);
-                if (!StrUtil.isBlank((CharSequence) claims.get("roles")))
+                if (!StrUtil.isBlank((CharSequence) claims.get("roles")) &&
+                        !StrUtil.isBlank(claims.getId()))
                 {
+                    request.setAttribute("userid", claims.getId());
                     request.setAttribute("roles", claims.get("roles"));
                 }
             } catch (Exception e)

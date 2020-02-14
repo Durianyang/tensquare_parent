@@ -1,0 +1,26 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      label: master
+      server:
+        git:
+          uri: https://gitee.com/durianyang/tensqaure_config.git
+          # searchPaths: respo
+    bus:
+      trace:
+        enabled: true
+
+  rabbitmq:
+    host: 47.93.11.144
+    port: 5672
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: bus-refresh

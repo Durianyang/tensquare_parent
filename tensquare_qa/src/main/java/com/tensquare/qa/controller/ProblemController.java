@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/problem")
 public class ProblemController
 {
-
     private final ProblemService problemService;
     private final HttpServletRequest request;
     private final BaseClient baseClient;

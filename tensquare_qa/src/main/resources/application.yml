@@ -40,3 +40,7 @@ eureka:
     #eureka client刷新本地缓存时间
     #默认30s
     #eureka.client.registryFetchIntervalSeconds=5
+
+feign:
+  hystrix:
+    enabled: true

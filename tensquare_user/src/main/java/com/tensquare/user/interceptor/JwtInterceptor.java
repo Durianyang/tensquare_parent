@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Author: Durian
  * Date: 2020/2/13 15:31
- * Description: JWT权限验证拦截
+ * Description: JWT权限验证拦截，有token验证，没有放行
  */
 @Component
 public class JwtInterceptor implements HandlerInterceptor

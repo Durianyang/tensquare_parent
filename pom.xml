@@ -19,6 +19,9 @@
         <module>tensquare_sms</module>
         <module>tensquare_eureka</module>
         <module>tensquare_friend</module>
+        <module>tensquare_manager</module>
+        <module>tensquare_web</module>
+        <module>config</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -57,10 +60,10 @@
             <scope>provided</scope>
         </dependency>
         <!-- devtools -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-devtools</artifactId>-->
+<!--        </dependency>-->
 
         <!--hutool工具包-->
         <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-core -->
@@ -83,7 +86,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Finchley.RELEASE</version>
+                <version>Finchley.SR2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

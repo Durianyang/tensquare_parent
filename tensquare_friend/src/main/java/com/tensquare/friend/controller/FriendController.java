@@ -55,11 +55,11 @@ public class FriendController
         return new Result(StatusCode.ACCESS_ERROR, false, "未登录");
     }
 
-    @PutMapping("/like/{userId}/{friendId}")
-    public Result addFriendOrDelFriend(@PathVariable String userId, @PathVariable String friendId)
+    @PutMapping("/like//{friendId}")
+    public Result addFriendOrDelFriend(@PathVariable String friendId)
     {
-        String roles = (String) request.getAttribute("roles");
-        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        String userId = (String) request.getAttribute("userid");
+        if (!StrUtil.isBlank(userId))
         {
             if (friendService.addFriend(userId, friendId) == 0)
             {
@@ -73,11 +73,11 @@ public class FriendController
 
     }
 
-    @DeleteMapping("/{userId}/{friendId}")
-    public Result deleteFriend(@PathVariable String userId, @PathVariable String friendId)
+    @DeleteMapping("/{friendId}")
+    public Result deleteFriend(@PathVariable String friendId)
     {
-        String roles = (String) request.getAttribute("roles");
-        if (!StrUtil.isBlank(roles) || Objects.equals("admin", roles) || Objects.equals("user", roles))
+        String userId = (String) request.getAttribute("userid");
+        if (!StrUtil.isBlank(userId))
         {
             friendService.deleteFriend(userId, friendId);
             return new Result(StatusCode.OK, true, "取消关注成功");
